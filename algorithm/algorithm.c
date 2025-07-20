@@ -12,11 +12,28 @@
 static void swap(void *a, void *b, size_t size) {
     ALGORITHM_LOG("[swap] Swapping elements of size %zu bytes.", size);
     
+#if defined _MSC_VER
+    if (size < 512)
+    {
+        unsigned char temp[512];
+        memcpy(temp, a, size);
+        memcpy(a, b, size);
+        memcpy(b, temp, size);
+    }
+    else
+    {
+        unsigned char* temp = (unsigned char*)malloc(size * sizeof(unsigned char));
+        memcpy(temp, a, size);
+        memcpy(a, b, size);
+        memcpy(b, temp, size);
+    }
+#else
     unsigned char temp[size];
     memcpy(temp, a, size);
     memcpy(a, b, size);
     memcpy(b, temp, size);
 
+#endif
     ALGORITHM_LOG("[swap] Swapped elements at memory locations %p and %p.", a, b);
 }
 
@@ -1555,7 +1572,30 @@ void algorithm_inplace_merge(void *base, size_t middle, size_t num, size_t size,
 
     size_t i = 0, j = middle, k;
     char *arr = (char *)base;
-    char temp[size];
+
+    bool needFree = false;
+    char* temp;
+#if defined _MSC_VER
+    char tempStackArray[512];
+    if (size < 512)
+    {
+        temp = tempStackArray;
+    }
+    else
+    {
+        
+        temp = (char*)malloc(size * sizeof(char));
+        if (temp != NULL)
+        {
+            needFree = true;
+        }
+        
+    }
+
+#else
+    char tempStackArray[size];
+    temp = tempStackArray;
+#endif
 
     while (i < middle && j < num) {
         if (comp(arr + i * size, arr + j * size) <= 0) {
@@ -1572,6 +1612,11 @@ void algorithm_inplace_merge(void *base, size_t middle, size_t num, size_t size,
             middle++;
             j++;
         }
+    }
+
+    if (needFree)
+    {
+        free(temp);
     }
 
     ALGORITHM_LOG("[algorithm_inplace_merge] Success: In-place merge completed.");
@@ -1671,9 +1716,25 @@ bool algorithm_is_permutation(const void *base1, size_t num1, size_t size1, cons
         return false;
     }
 
-    bool found1[num1], found2[num2];
+#if defined(_MSC_VER)
+    bool* found1 = (bool*)malloc(num1 * sizeof(bool));
+    bool* found2 = (bool*)malloc(num2 * sizeof(bool));
+    if (!found1 || !found2) {
+        if (found1) free(found1);
+        if (found2) free(found2);
+        return false;
+    }
+    memset(found1, 0, num1 * sizeof(bool));
+    memset(found2, 0, num2 * sizeof(bool));
+#else
+    bool found1[num1];
+    bool found2[num2];
     memset(found1, 0, sizeof(found1));
     memset(found2, 0, sizeof(found2));
+#endif
+
+
+
 
     for (size_t i = 0; i < num1; ++i) {
         bool matched = false;
@@ -1687,11 +1748,19 @@ bool algorithm_is_permutation(const void *base1, size_t num1, size_t size1, cons
         }
         if (!matched) {
             ALGORITHM_LOG("[algorithm_is_permutation] Info: Element at index %zu in the first array does not have a match in the second array.", i);
+#if defined (_MSC_VER)
+            if (found1) free(found1);
+            if (found2) free(found2);
+#endif
             return false;
         }
     }
 
     ALGORITHM_LOG("[algorithm_is_permutation] Success: The arrays are permutations of each other.");
+#if defined (_MSC_VER)
+    if (found1) free(found1);
+    if (found2) free(found2);
+#endif
     return true;
 }
 

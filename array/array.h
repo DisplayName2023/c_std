@@ -366,9 +366,32 @@ static inline void __array_reduce_impl(const void *data, size_t count, size_t el
     memcpy(result, data, elem_size);
     const unsigned char *ptr = (const unsigned char *)data;
     for (size_t i = 1; i < count; i++) {
+#if defined _MSC_VER
+        if (elem_size < 512)
+        {
+            unsigned char temp[512];
+            memcpy(temp, result, elem_size);
+            reduce_func(temp, ptr + i * elem_size, result);
+        }
+        else
+        {
+            unsigned char* temp = (unsigned char*)malloc(elem_size * sizeof(unsigned char));
+            if (temp == NULL)
+            {
+                return;
+            }
+            memcpy(temp, result, elem_size);
+            reduce_func(temp, ptr + i * elem_size, result);
+
+            free(temp);
+        }
+
+
+#else
         unsigned char temp[elem_size];
         memcpy(temp, result, elem_size);
         reduce_func(temp, ptr + i * elem_size, result);
+#endif
     }
 }
 

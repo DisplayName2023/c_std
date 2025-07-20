@@ -3,13 +3,38 @@ project(c_std)
 
 # Set the C standard
 set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g  -O3 -march=native -funroll-loops -Wall -Wextra -pedantic -Wno-deprecated-declarations -s")
 
+
+
+if (MSVC)
+
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    add_compile_options(
+        /wd4996   # 'strcpy', 'sprintf' 等 unsafe 函数警告
+        /wd4267   # size_t 转 int 的警告
+        /wd4242   # int 转 char 警告
+        /wd4255   # 没有函数原型，() 转换为 (void)
+        /wd4013   # 假定外部函数定义
+        /wd5045   # Spectre 缓解措施提示
+    )
+endif()
+
+if (MSVC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g  -O3 -march=native -funroll-loops -Wall -Wextra -pedantic -Wno-deprecated-declarations -s")
+endif()
 
 # Platform-specific linker flags
 if (WIN32)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-auto-import")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-auto-import")
+    if (MSVC)
+        message(STATUS "MSVC")
+    else()
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-auto-import")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-auto-import")
+
+    endif()
+
 endif()
 
 # Set the build directory
@@ -38,7 +63,7 @@ add_subdirectory(vector)
 add_subdirectory(time)
 add_subdirectory(statistics)
 add_subdirectory(tuple)
-add_subdirectory(turtle)
+# add_subdirectory(turtle)
 add_subdirectory(sysinfo)
 add_subdirectory(stack)
 add_subdirectory(span)
@@ -51,27 +76,27 @@ add_subdirectory(cli)
 add_subdirectory(concurrent)
 add_subdirectory(config)
 add_subdirectory(file_io)
-add_subdirectory(crypto)
+# add_subdirectory(crypto)
 add_subdirectory(csv)
 add_subdirectory(date)
 add_subdirectory(deque)
-add_subdirectory(dir)
+# add_subdirectory(dir)
 add_subdirectory(forward_list)
 add_subdirectory(list)
 add_subdirectory(log)
 add_subdirectory(matrix)
-add_subdirectory(network)
+# add_subdirectory(network)
 add_subdirectory(numbers)
 add_subdirectory(json)
 add_subdirectory(secrets)
 add_subdirectory(xml)
-add_subdirectory(regex)
-add_subdirectory(unittest)
+# add_subdirectory(regex)
+# add_subdirectory(unittest)
 add_subdirectory(serial_port)
-add_subdirectory(plot)
-add_subdirectory(bigint)
+#add_subdirectory(plot)
+# add_subdirectory(bigint)
 add_subdirectory(evalexpr)
-add_subdirectory(bigfloat)
+# add_subdirectory(bigfloat)
 add_subdirectory(audio)
 # Create the main executable
 add_executable(main main.c)
@@ -83,7 +108,7 @@ if (WIN32)
         stdstring
         fmt
         encoding
-        stdcrypto
+        # stdcrypto
         # network
         # raylib
         opengl32
@@ -91,8 +116,8 @@ if (WIN32)
         winmm
         ole32
         bthprops
-        ssl
-        pq
+        # ssl
+        # pq
         # Optional modules that are commented out:
         # random
         # map
@@ -134,7 +159,7 @@ if (WIN32)
         # bigint
         # evalexpr
         # bigfloat
-        audio
+        # audio
 
     )
 else()
@@ -144,15 +169,15 @@ else()
         stdstring
         fmt
         encoding
-        stdcrypto
-        network
-        OpenSSL::SSL
-        OpenSSL::Crypto
-        pthread
-        dl
-        m
-        raylib
-        pq
+        # stdcrypto
+        # network
+        # OpenSSL::SSL
+        # OpenSSL::Crypto
+        # pthread
+        # dl
+        # m
+        # raylib
+        # pq
         # Optional modules that are commented out:
         # random
         # map
@@ -192,7 +217,7 @@ else()
         # plot
         # bigint
         evalexpr
-        bigfloat
+        # bigfloat
         audio
     )
 endif()
@@ -217,3 +242,6 @@ else()
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
 endif()
+
+
+

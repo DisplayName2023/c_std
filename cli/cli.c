@@ -9,7 +9,10 @@
 #include "cli.h"
 #include "../string/std_string.h"
 
-
+#if defined _MSC_VER
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#endif
 
 extern char **environ;
 static CliError cli_last_error = {0, ""};

@@ -11,6 +11,11 @@
 #include "../string/std_string.h"
 #include "../fmt/fmt.h"
 
+#if defined _MSC_VER
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#endif
+
 
 static char *trim_whitespace(char *str) {
     if (!str) {

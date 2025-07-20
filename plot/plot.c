@@ -279,7 +279,7 @@ void plot_draw(Plot* plot) {
         else if (plot->pltype == PLTYPE_HISTOGRAM) {
             findMinMax(plot, NULL, NULL, &yMin, &yMax);
             
-            size_t numBins = 10;  
+            const size_t numBins = 10;  
             float binWidth = (yMax - yMin) / numBins;
             if (binWidth == 0) binWidth = 1e-6;  
             if (yMax == yMin) {
@@ -289,7 +289,7 @@ void plot_draw(Plot* plot) {
 
             PLOT_LOG("[DEBUG] yMin: %.2f, yMax: %.2f", yMin, yMax);
 
-            int binCounts[numBins];
+            int binCounts[10];
             memset(binCounts, 0, sizeof(binCounts));
         
             // Assign values to bins

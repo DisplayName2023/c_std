@@ -4,7 +4,14 @@
  * @class String
 */
 #include <string.h>
+
+#if defined (_MSC_VER)
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#else
 #include <strings.h>  // For functions like strcasecmp (POSIX-specific)
+#endif
+
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
