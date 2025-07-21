@@ -1,16 +1,16 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.files import copy
+from conan.tools.files import copy, collect_libs
 import os
 
 
 class CStdConan(ConanFile):
     name = "c_std"
-    version = "1.0"
+    version = "0.0.1-1"
     package_type = "application"
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*", "*.c", "*.h", "*/"
+    exports_sources = "CMakeLists.txt", "*", "*.c", "*.h", "*/", "!build/"
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
@@ -80,8 +80,41 @@ class CStdConan(ConanFile):
         cmake = CMake(self)
         cmake.install()
         
+        # Copy all header files from module directories
+        modules = [
+            "algorithm", "array", "audio", "bigfloat", "bigint", "bitset", "cli", 
+            "concurrent", "config", "crypto", "csv", "database", "date", "deque", 
+            "dir", "encoding", "evalexpr", "file_io", "fmt", "forward_list", "json", 
+            "list", "log", "map", "matrix", "network", "numbers", "plot", 
+            "priority_queue", "queue", "random", "regex", "secrets", "serial_port", 
+            "span", "stack", "statistics", "string", "sysinfo", "time", "tuple", 
+            "turtle", "unittest", "vector", "xml"
+        ]
+        
+        # Copy header files from each module
+        for module in modules:
+            copy(self, "*.h", 
+                 dst=os.path.join(self.package_folder, "include", module),
+                 src=os.path.join(self.source_folder, module))
+        
+        # Copy main header if it exists
+        copy(self, "*.h", 
+             dst=os.path.join(self.package_folder, "include"),
+             src=self.source_folder)
+        
+        # Copy built libraries
+        copy(self, "*.so", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        copy(self, "*.dylib", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        copy(self, "*.dll", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        copy(self, "*.a", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        copy(self, "*.lib", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        
     def package_info(self):
-        self.cpp_info.libs = ["c_std"]
+        # Automatically collect all built libraries
+        self.cpp_info.libs = collect_libs(self)
+        
+        # Add include directories
+        self.cpp_info.includedirs = ["include"]
         
         # Add system libraries based on platform
         if self.settings.os == "Windows":
