@@ -7,7 +7,6 @@ import os
 class CStdConan(ConanFile):
     name = "c_std"
     version = "0.0.1-1"
-    package_type = "application"
 
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "*", "*.c", "*.h", "*/", "!build/"
@@ -105,7 +104,7 @@ class CStdConan(ConanFile):
         # Copy built libraries
         copy(self, "*.so", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
         copy(self, "*.dylib", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
-        copy(self, "*.dll", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
+        copy(self, "*.dll", dst=os.path.join(self.package_folder, "bin"), src=self.build_folder, keep_path=False)
         copy(self, "*.a", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
         copy(self, "*.lib", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
         
@@ -125,3 +124,17 @@ class CStdConan(ConanFile):
             self.cpp_info.system_libs.extend([
                 "pthread", "dl", "m"
             ]) 
+
+    def deploy(self):
+        # 1) include
+        copy(self, "*.h*", src=self.source_folder,
+             dst=os.path.join(self.deploy_folder, "include"),
+             keep_path=True)          # keep_path=True is important to maintain the directory structure
+        # 2) src（ keep the directory structure for source files）
+        copy(self, "*.c*",   src=self.source_folder,
+             dst=os.path.join(self.deploy_folder, "src"),
+             keep_path=True)
+        copy(self, "*.cpp*", src=self.source_folder,
+             dst=os.path.join(self.deploy_folder, "src"),
+             keep_path=True)
+
