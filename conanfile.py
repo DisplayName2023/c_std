@@ -9,7 +9,7 @@ class CStdConan(ConanFile):
     version = "0.0.1-1"
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "*", "*.c", "*.h", "*/", "!build/"
+    exports_sources = "CMakeLists.txt", "*", "*.c", "*.h", "*/", "!build/", "!.git/"
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
@@ -101,6 +101,10 @@ class CStdConan(ConanFile):
              dst=os.path.join(self.package_folder, "include"),
              src=self.source_folder)
         
+        copy(self, "*.h", src=self.source_folder, dst=os.path.join(self.package_folder, "c_std_src"))
+        copy(self, "*.c", src=self.source_folder, dst=os.path.join(self.package_folder, "c_std_src"))
+
+
         # Copy built libraries
         copy(self, "*.so", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
         copy(self, "*.dylib", dst=os.path.join(self.package_folder, "lib"), src=self.build_folder, keep_path=False)
@@ -126,15 +130,24 @@ class CStdConan(ConanFile):
             ]) 
 
     def deploy(self):
-        # 1) include
-        copy(self, "*.h*", src=self.source_folder,
-             dst=os.path.join(self.deploy_folder, "include"),
-             keep_path=True)          # keep_path=True is important to maintain the directory structure
-        # 2) src（ keep the directory structure for source files）
-        copy(self, "*.c*",   src=self.source_folder,
-             dst=os.path.join(self.deploy_folder, "src"),
-             keep_path=True)
-        copy(self, "*.cpp*", src=self.source_folder,
-             dst=os.path.join(self.deploy_folder, "src"),
-             keep_path=True)
+
+        should_copy_c_std = False
+
+        if should_copy_c_std:
+            copy(self, "c_std_src/*", src=self.package_folder, dst=self.deploy_folder)
+        else:    
+            # 1) include
+            copy(self, "*.h*", src=self.source_folder,
+                dst=os.path.join(self.deploy_folder, "include"),
+                keep_path=True)          # keep_path=True is important to maintain the directory structure
+            # 2) src（ keep the directory structure for source files）
+            copy(self, "*.c*",   src=self.source_folder,
+                dst=os.path.join(self.deploy_folder, "src"),
+                keep_path=True)
+            copy(self, "*.cpp*", src=self.source_folder,
+                dst=os.path.join(self.deploy_folder, "src"),
+                keep_path=True)
+            
+
+        
 
